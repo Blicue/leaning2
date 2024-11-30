@@ -1,5 +1,11 @@
 import pytest
 from playwright.sync_api import Playwright, sync_playwright
+import sys
+import os
+
+# 添加根目录到 sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 @pytest.fixture(scope="session")
 def playwright_instance():
@@ -18,3 +24,5 @@ def page(browser):
     page = context.new_page()
     yield page
     context.close()
+    
+    
