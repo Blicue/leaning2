@@ -1,5 +1,12 @@
 import pytest
 from playwright.sync_api import Playwright, sync_playwright
+import sys
+import os
+
+
+print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 @pytest.fixture(scope="session")
 def playwright_instance():
@@ -18,3 +25,4 @@ def page(browser):
     page = context.new_page()
     yield page
     context.close()
+    
