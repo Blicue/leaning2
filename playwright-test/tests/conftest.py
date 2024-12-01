@@ -3,8 +3,9 @@ from playwright.sync_api import Playwright, sync_playwright
 import sys
 import os
 
-# 添加根目录到 sys.path
-sys.path.append("D:\python\newlife\playwright-test")
+
+print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 @pytest.fixture(scope="session")

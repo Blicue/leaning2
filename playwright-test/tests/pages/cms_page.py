@@ -50,8 +50,47 @@ class CMSPage:
         删除用户
         username: 用户名
         """
-        paht = (
+        path = (
             f"//tr[@class='text-c' and .//u[text()='{username}']]"
         )
-        self.main_frame.locator(paht).get_by_role("link").nth(3).click()
+        self.main_frame.locator(path).get_by_role("link").nth(3).click()
         self.main_frame.get_by_role("link", name="确定").click()
+
+    def ban_user(self, username):
+        """
+        停用用户
+        username: 用户名
+        """
+        path = (
+            f"//tr[@class='text-c' and .//u[text()='{username}']]"
+        )
+        self.main_frame.locator(path).get_by_role("link").nth(0).click()
+        self.main_frame.get_by_role("link", name="确定").click()
+
+    def assert_delete_msg(self):
+        """
+        断言删除成功
+        """
+        self.main_frame.get_by_text("已删除!").wait_for(state="visible")
+        msg = self.main_frame.get_by_text("已删除!")
+        assert msg.is_visible()
+        
+    def assert_user_exist(self, username):
+        """
+        断言用户存在
+        """
+        path = (
+            f"//tr[@class='text-c' and .//u[text()='{username}']]"
+        )
+        self.main_frame.locator(path).wait_for(state="visible")
+        userdata = self.main_frame.locator(path)
+        assert userdata.is_visible()
+        
+    def assert_ban_msg(self):
+        """
+        断言停用成功
+        """
+        self.main_frame.get_by_text("已停用!").wait_for(state="visible")
+        msg = self.main_frame.get_by_text("已停用!")
+        assert msg.is_visible()
+           
