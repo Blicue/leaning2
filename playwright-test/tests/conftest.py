@@ -3,8 +3,8 @@ from playwright.sync_api import Playwright, sync_playwright
 import sys
 import os
 
-# 添加根目录到 sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# 娣诲姞鏍圭洰褰曞埌 sys.path
+sys.path.append("D:\python\newlife\playwright-test")
 
 
 @pytest.fixture(scope="session")
@@ -24,5 +24,4 @@ def page(browser):
     page = context.new_page()
     yield page
     context.close()
-    
     

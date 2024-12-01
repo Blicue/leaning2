@@ -4,19 +4,34 @@ from playwright.sync_api import Page
 
 
 class TestCMS:
-    @pytest.fixture(scope="class")
+    @pytest.fixture(scope="function")
     def set_up(self):
         """
         Fixture 初始化 CMSPage，并在类级别共享
         """
-        self.cms_page = CMSPage(username="admin", password="123456")
+        self.cms_page = CMSPage(Page)
         yield self.cms_page
 
-    def test_example(self):
+    def test_add_user(self, set_up):
         """
-        示例测试用例
+        验证添加用户
         """
-        self.cms_page = CMSPage(Page, username="admin", password="123456")
+        set_up
+        # 进入用户中心用户管理页面
         self.cms_page.page.get_by_text("用户中心").click()
         self.cms_page.page.get_by_role("link", name="用户管理").click()
-        print(self.cms_page.page.url)
+        # 执行添加用户操作
+        self.cms_page.add_user("juyunlong", "女", "13144445555", "1234@qq.com", "adminjyl", "123456")
+        
+    def test_delete_user(self, set_up):
+        """
+        验证删除用户
+        """
+        set_up
+        # 进入用户中心用户管理页面
+        self.cms_page.page.get_by_text("用户中心").click()
+        self.cms_page.page.get_by_role("link", name="用户管理").click()
+        # 执行删除用户操作
+        self.cms_page.delete_user("juyunlong")
+        
+        
