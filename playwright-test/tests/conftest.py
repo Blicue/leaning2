@@ -1,6 +1,8 @@
 import pytest
 import requests
-from playwright.sync_api import sync_playwright
+import os
+import shutil
+from playwright.sync_api import sync_playwright, Page, Browser
 
 
 # 登录函数
@@ -15,7 +17,7 @@ def login_and_get_cookies(username, password):
         "loginPwd": password
     }
     response = session.post(login_url, data=data)
-    if response.json().get("code") == "200":  # 根据实际返回判断成功条件
+    if response.json().get("code") == "200":
         print("登录成功!")
         return session.cookies.get_dict()  # 返回 Cookies
     else:
@@ -28,8 +30,8 @@ def cookies():
     """
     会话级别的 Cookies Fixture
     """
-    username = "admin"  # 替换为实际的用户名
-    password = "123456"  # 替换为实际的密码
+    username = "admin"
+    password = "123456"
     return login_and_get_cookies(username, password)
 
 
@@ -42,29 +44,64 @@ def playwright_instance():
         yield playwright
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def browser(playwright_instance):
     """
-    每个用例启动一个新的 Browser 实例
+    会话级别的 Browser 实例
+    浏览器会话将在所有用例执行完毕后关闭
     """
     browser = playwright_instance.chromium.launch(headless=False)
     yield browser
     browser.close()
 
 
-@pytest.fixture(scope="function")
+def clear_reports():
+    """
+    清除 reports 下的视频和截图文件
+    """
+    video_dir = "reports/videos"
+    screenshot_dir = "reports/screenshot"
+
+    # 删除视频目录下的所有文件
+    if os.path.exists(video_dir):
+        for file in os.listdir(video_dir):
+            file_path = os.path.join(video_dir, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+    # 删除截图目录下的所有文件
+    if os.path.exists(screenshot_dir):
+        for file in os.listdir(screenshot_dir):
+            file_path = os.path.join(screenshot_dir, file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+
+@pytest.fixture(scope="session")
 def page(browser, cookies):
     """
-    每个用例启动一个新的 Page，并自动登录
+    会话级别的 Page fixture
+    所有用例共享一个 Page，执行完后返回首页
     """
-    context = browser.new_context()
+
+    # 清理 reports 下的视频和截图文件
+    clear_reports()
+
+    # 确保视频和截图保存目录存在
+    os.makedirs("reports/videos", exist_ok=True)
+    os.makedirs("reports/screenshot", exist_ok=True)
+
+    # 创建上下文时使用 record_video 配置
+    context = browser.new_context(
+        record_video_dir="reports/videos",  # 视频保存路径
+    )
 
     # 将 Cookies 添加到上下文
     if cookies and "JSESSIONID" in cookies:
         context.add_cookies([{
             "name": "JSESSIONID",
             "value": cookies["JSESSIONID"],
-            "domain": "192.168.88.130",  # 修改为实际的域名/IP
+            "domain": "192.168.88.130",
             "path": "/",
             "httpOnly": True,
             "secure": False  # 如果是 HTTPS，需设为 True
@@ -72,12 +109,26 @@ def page(browser, cookies):
     else:
         raise RuntimeError("无法设置 Cookies，因为未成功登录！")
 
-    # 打开新页面并访问主界面
+    # 打开页面并访问主界面
     page = context.new_page()
     url = "http://192.168.88.130:8080/cms/manage/index.do"
     page.goto(url)
 
     yield page
+
+    # 每个用例结束后都回到首页
+    page.reload()
+
+    # 截图保存路径
+    screenshot_path = "reports/screenshot/test_screenshot.png"  # 可以根据需要调整文件名
+    page.screenshot(path=screenshot_path)
+
+    # 获取视频路径
+    if page.video:
+        video_path = page.video.path()
+        print(f"视频保存路径：{video_path}")
+    else:
+        print("没有录制视频！")
 
     # 关闭上下文
     context.close()
