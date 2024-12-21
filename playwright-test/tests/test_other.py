@@ -1,4 +1,4 @@
-from tests.pages.other_page import otherPage
+from pages.other_page import otherPage
 from playwright.sync_api import Page
 import pytest
 
