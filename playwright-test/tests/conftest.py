@@ -1,7 +1,6 @@
 import pytest
 import requests
 import os
-import shutil
 from playwright.sync_api import sync_playwright, Page, Browser
 
 

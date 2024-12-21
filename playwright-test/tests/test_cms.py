@@ -1,5 +1,6 @@
 import pytest
-from tests.pages.cms_page import CMSPage
+from pages.cms_page import CMSPage
+from typing import ClassVar
 
 
 class TestCMS:
